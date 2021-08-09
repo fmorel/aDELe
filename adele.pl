@@ -1,9 +1,13 @@
 #!/bin/perl
 
+use strict;
+use warnings;
+
 my %data;
-my $vowel = quotemeta "[aeiou]";
-my $conso = quotemeta "[b-df-hj-np-tv-z]";
-my $rval = quotemeta "\w.*";
+my $vowel = '[aeiou]';
+my $conso = '[b-df-hj-np-tv-z]';
+my $rval = '\w.*';
+
 #Parsing
 #-------
 #Instruction object :
@@ -46,48 +50,52 @@ my %execution = ();
 
 sub is_var {
     my $v = shift;
-    return ($v =~ m/^$vowel($consonant$vowel)*$/);
+    return ($v =~ m/^$vowel($conso$vowel)*$/);
 }
 sub is_imm {
     my $i = shift;
     return ($i =~ m/^-?\d+$/);
 }
 sub is_var_or_imm {
-    return is_var(@_) || is_imm(@_);
+    my $vi = shift;
+    return is_var($vi) || is_imm($vi);
 }
 sub is_label {
     my $l = shift;
-    return ($l =~ m/^($consonant$vowel)+$/);
+    return ($l =~ m/^($conso$vowel)+$/);
 }
 
 #Remove indentations and comments
 sub trim {
     my $s = shift;
-    $s =~ s/^\s+|\s+$//;
-    $s = ~s/#.*//;
+    $s =~ s/#.*//;
+    $s =~ s/^\s+|\s+$//g;
     return $s;
 }
 
 sub parse_func {
     my $f = shift;
-    if ($f =~ m/^FA ((?:$consonant$vowel)+):$/)
+    if ($f =~ m/^FA\s+((?:$conso$vowel)+)\s*:$/) {
         return $1;
-    else
+    } else {
         return "";
+    }
 }
 
 sub parse_rval {
     my $r = shift;
     my $res = 0;
     my %inst = (rval_type => -1);
-    if is_var($r) {
+    if (is_var($r)) {
        $inst{rval_type} = 0;
        $inst{rval1_var} = $r;
-    } elsif (is_imm($r) {
+    } elsif (is_imm($r)) {
        $inst{rval_type} = 1;
        $inst{rval1_imm} = int($r);
     } elsif ($r =~ m/^(\w+)\s+(PA|MA|FA)\s+(\w+)$/) {
-        if (is_var_or_imm($1) && is_var_or_imm($3)) {
+        my $v1 = $1;
+        my $v2 = $3;
+        if (is_var_or_imm($v1) && is_var_or_imm($v2)) {
             if ($2 =~ m/PA/) {
                 $inst{rval_type} = 2;
             } elsif ($2 =~ m/MA/) {
@@ -95,15 +103,15 @@ sub parse_rval {
             } elsif ($2 =~ m/FA/) {
                 $inst{rval_type} = 4;
             }
-            if (is_var($1)) {
-                $inst{rval1_var} = $1;
+            if (is_var($v1)) {
+                $inst{rval1_var} = $v1;
             } else {
-                $inst{rval1_imm} = int($1);
+                $inst{rval1_imm} = int($v1);
             }
-            if (is_var($3)) {
-                $inst{rval2_var} = $3;
+            if (is_var($v2)) {
+                $inst{rval2_var} = $v2;
             } else {
-                $inst{rval2_imm} = int($3);
+                $inst{rval2_imm} = int($v2);
             }
         } else {
             $res = -1;
@@ -118,8 +126,8 @@ sub parse_rval {
 
 sub parse_error
 {
-    $e = shift;
-    die("Parser error @ $line : $e");
+    my $e = shift;
+    die(">Parser error @ $line : $e");
 }
 
 sub parse_inst
@@ -165,58 +173,58 @@ sub parse_inst
         $rinst->{label} = $2;
     } elsif ($i =~ m/ORWAR$/) {
         $rinst->{op_code} = "ORWAR";
-    } elsif ($i =~ m/($consonant$vowel)+:$/) {
+    } elsif ($i =~ m/((?:$conso$vowel)+)\s*:$/) {
         $rinst->{name} = $1;
     } else {
-        parse_error("Unrecognized instruction $i");
+        parse_error("Unrecognized instruction <$i>");
     }
     return $rinst;
 }
 
 #Parse file
 
-my %f = (insts => (), lbls => ());
-
+my $f = {insts => [], lbls => []};
+print ">Parsing $ARGV[0] ...\n";
 while (<>) {
     $line += 1;
-    my $l = chomp;
-    $l = trim($l);
+    my $l = trim($_);
     if ($l eq "") {
         next;
     }
     #Function context
-    if (exists($f{name})) {
+    if (exists($f->{name})) {
         my $rinst = parse_inst($l);
         #Label
         if (exists($rinst->{name})) {
-            $rinst->{inst_idx} = @{$f{inst}}    #Current number of instructions
-            push(@{$f{lbls}}, $rinst);
+            $rinst->{inst_idx} = @{$f->{insts}};    #Current number of instructions
+            push(@{$f->{lbls}}, $rinst);
         }
         #Regular instruction
         else {
-            push(@{$f{insts}}, $rinst);
+            push(@{$f->{insts}}, $rinst);
             #End of function, append to functions array
             if ($rinst->{op_code} eq "ORWAR") {
-                push (@functions, \%f);
-                %f = (insts => (), lbls => ());
+                push (@functions, $f);
+                $f = {insts => [], lbls => []};
             }
         }
     }
     #No context
     else {
-        $f{name} = parse_func($l);
-        if ($f{name} eq "") {
-            parse_error("Expected function definition");
+        $f->{name} = parse_func($l);
+        if ($f->{name} eq "") {
+            parse_error("Expected function definition\n");
         }
     }
 }
 
-print "Parsing successful\n";
+print ">Parsing successful: $line lines\n";
+print ">Functions:\n";
 foreach (@functions) {
-    %f = %{$_};
+    my %f = %{$_};
     my $n_inst = @{$f{insts}};
     my $n_lbls = @{$f{lbls}};
-    print "$f{name} has $n_inst instructions and $n_lbls labels";
+    print "\t$f{name} has $n_inst instructions and $n_lbls labels\n";
 }
 
     

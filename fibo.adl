@@ -1,0 +1,18 @@
+#Single function to compute Fibonnacci numbers
+    
+FA debu:
+    DA ana  #counter of iteration from command line
+    BA unu 1    #u_n
+    BA unumu 1  #u_n-1
+    fibo:
+        BA ubufu unu PA unumu # u_n+1 <- un + un-1
+        BA unumu unu
+        BA unu ubufu
+        BA ana ana MA 1       #counter decrement
+        HOPLAGA fibo ana      #loop
+    TA unu
+    HOPLAFA sekasa            #print result
+    TA 0
+    ORWAR
+
+

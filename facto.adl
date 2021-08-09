@@ -1,0 +1,21 @@
+#Factorial of argument
+
+FA facoto:
+    DA ana              # counter
+    HOPLAZA fini ana    # Will return if zero
+    TA ana MA 1
+    HOPLAFA facoto      # Recursive call with ana-1
+    DA afa              # afa = facoto(ana-1)
+    TA ana FA afa       # returns ana * afa
+    HOPLA reta
+fini:
+    TA 1
+reta:
+    ORWAR
+
+FA debu:
+    HOPLAFA facoto  # Command line argument is directly facoto argument
+    HOPLAFA sekasa  # facoto returns is directly argument to print
+    TA 0
+    ORWAR
+
