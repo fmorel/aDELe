@@ -26,8 +26,13 @@ BA [var] [rval] : assigns rvalue to variable - "bien"
 
 Stack
 ------------
-TA [rval] : gives rvalue as function argument (push on stack) or for function return - "tiens"
-DA [var] : pop from stack and retrieve value (in reverse order) and store it in variable - "donne"
+Data is stored in stacks, like a cube of toys in which you can store object, or and adult to which you can give them 
+and retrieve them in 'last in', 'first out' order.
+TA and DA command can operate on 3 stacks
+- The default 'unnamed' stack is used to pass function arguments and retrive return values.
+- Two 'data' stacks called 'papa' and 'mama' that exists globally, specified at the end of the instruction, preceded by > for TA and < for DA
+TA [rval] (>papa/mama): gives rvalue as function argument (push on stack) or for function return - "tiens"
+DA [var] (<papa/mama) : pop from stack and retrieve value (in reverse order) and store it in variable - "donne"
 For the debu function, DA allows to retrieve command line arguments.
 
 Jumps / functions
@@ -37,7 +42,7 @@ HOPLAZA [label] [rval] : Jumps to label if rvalue evals to 0, else continue to n
 HOPLAGA [label] [rval] : Jumps to label if rvalue evals to >0, else continue to next instruction
 
 HOPLAFA [label] : Call to function described by label
-ORWAR: Returns from fonction - "au revoir"
+ORWAR: Returns from fonction. It shall be the last instruction of any function - "au revoir"
 
 Loop
 ----
@@ -49,7 +54,7 @@ ACOR [label] [var] :=
 Labels
 ------
 Followed by ':'
-Anyname of the form (consonant+voyel)+
+Anyname of the form (consonant+voyel)+ and different from 'papa' and 'mama'
 Voyel can be different, lowercase only.
 Example valid: babi, coco.
 For functions declaration, it is preceded by 'FA'
