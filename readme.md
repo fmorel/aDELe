@@ -110,3 +110,8 @@ Full examples
       HOPLAFA sekasa  # facoto returns is directly argument to print
       TA 0
       ORWAR
+
+Launch an aDELe program
+============
+
+`./adele.pl [program_file] [arguments]
