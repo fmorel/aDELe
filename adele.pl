@@ -3,21 +3,19 @@
 use strict;
 use warnings;
 
+########
 #Parsing
 #-------
 #Instruction object :
 #   op_code-> "BA"
 #   label -> '' or 'coco'
 #   var -> '' or "aba"
-#   rval_type -> -1 (no rval), 0 (var), 1 (imm), 2 (rval PA), 3 (rval MA), 4 (rval FA)
-#   rval1_var -> valid only if rval_type == 0, 2, 3, 4
-#   rval1_imm -> valid only if rval_type == 1, 2, 3, 4 and rval1_var == ''
-#   rval2_var -> valid only if rval_type == 2, 3, 4
-#   rval2_imm -> valid only if rval_type == 2, 3, 4 and rval2_var == ''
+#   expr_type -> -1 (no expr), 0 (var), 1 (imm), 2 (expr PA), 3 (expr MA), 4 (expr FA)
+#   expr1_var -> valid only if expr_type == 0, 2, 3, 4
+#   expr1_imm -> valid only if expr_type == 1, 2, 3, 4 and expr1_var == ''
+#   expr2_var -> valid only if expr_type == 2, 3, 4
+#   expr2_imm -> valid only if expr_type == 2, 3, 4 and expr2_var == ''
 #
-#Label object :
-#   name-> "coco"
-#   inst_idx-> 12 - index of instruction inside the inst array of the function
 
 #Function oject :
 #   name-> "fubara"
@@ -26,8 +24,10 @@ use warnings;
 
 my $vowel = '[aeiou]';
 my $conso = '[b-df-hj-np-tv-z]';
-my $rval = '\w.*';
+my $expr = '\w.*';
+my $line = 0;
 
+#Quick helpers
 sub is_var {
     my $v = shift;
     return ($v =~ m/^$vowel($conso$vowel)*$/);
@@ -56,6 +56,14 @@ sub trim {
     return $s;
 }
 
+#Automatically add line information when encountering parsing error
+sub parse_error
+{
+    my $e = shift;
+    die(">Parser error @ line $line : $e\n");
+}
+
+#Parse sub-elements
 sub parse_func {
     my $f = shift;
     if ($f =~ m/^FA\s+((?:$conso$vowel)+)\s*:$/) {
@@ -65,36 +73,39 @@ sub parse_func {
     }
 }
 
-sub parse_rval {
+sub parse_expr {
     my $r = shift;
+    my $inst = shift;
     my $res = 0;
-    my %inst = (rval_type => -1);
+    
+    $inst->{expr_type} = -1;
+
     if (is_var($r)) {
-       $inst{rval_type} = 0;
-       $inst{rval1_var} = $r;
+       $inst->{expr_type} = 0;
+       $inst->{expr1_var} = $r;
     } elsif (is_imm($r)) {
-       $inst{rval_type} = 1;
-       $inst{rval1_imm} = int($r);
+       $inst->{expr_type} = 1;
+       $inst->{expr1_imm} = int($r);
     } elsif ($r =~ m/^(\w+)\s+(PA|MA|FA)\s+(\w+)$/) {
         my $v1 = $1;
         my $v2 = $3;
         if (is_var_or_imm($v1) && is_var_or_imm($v2)) {
             if ($2 =~ m/PA/) {
-                $inst{rval_type} = 2;
+                $inst->{expr_type} = 2;
             } elsif ($2 =~ m/MA/) {
-                $inst{rval_type} = 3;
+                $inst->{expr_type} = 3;
             } elsif ($2 =~ m/FA/) {
-                $inst{rval_type} = 4;
+                $inst->{expr_type} = 4;
             }
             if (is_var($v1)) {
-                $inst{rval1_var} = $v1;
+                $inst->{expr1_var} = $v1;
             } else {
-                $inst{rval1_imm} = int($v1);
+                $inst->{expr1_imm} = int($v1);
             }
             if (is_var($v2)) {
-                $inst{rval2_var} = $v2;
+                $inst->{expr2_var} = $v2;
             } else {
-                $inst{rval2_imm} = int($v2);
+                $inst->{expr2_imm} = int($v2);
             }
         } else {
             $res = -1;
@@ -102,8 +113,6 @@ sub parse_rval {
     } else {
         $res = -1;
     }
-    my $rinst = shift;
-    %$rinst = %inst;
     return $res;
 }
 
@@ -122,73 +131,64 @@ sub parse_stack
     }
 }
 
-my $line = 0;
-sub parse_error
-{
-    my $e = shift;
-    die(">Parser error @ line $line : $e\n");
-}
-
 sub parse_inst
 {
     my $i = shift;
-    my %inst = ();
-    my $rinst = \%inst;
+    my $inst = {};
     # BA
-    if ($i =~ m/BA\s+(\w+)\s*($rval)$/) {
+    if ($i =~ m/^BA\s+(\w+)\s*($expr)/) {
         if (!is_var($1)) {
             parse_error("Expected variable as 1st argument of BA instruction <$i>");
         }
-        if (parse_rval($2, $rinst) < 0) {
-            parse_error("Expected rvalue as 2nd argument of BA instruction <$i>");
+        if (parse_expr($2, $inst) < 0) {
+            parse_error("Expected exprue as 2nd argument of BA instruction <$i>");
         }
-        $rinst->{op_code} = "BA";
-        $rinst->{var} = $1;
-    } elsif ($i =~ m/TA\s+($rval)\s*(?:>(\w+))?$/) {
-        if (parse_rval($1, $rinst) < 0) {
-            parse_error("Expected rvalue as 1st argument of TA instruction <$i>");
+        $inst->{op_code} = "BA";
+        $inst->{var} = $1;
+    } elsif ($i =~ m/^TA\s+($expr)\s*(?:>(\w+))?/) {
+        if (parse_expr($1, $inst) < 0) {
+            parse_error("Expected exprue as 1st argument of TA instruction <$i>");
         }
-        $rinst->{stack} = parse_stack($2, $i);
-        $rinst->{op_code} = "TA";
-    } elsif ($i =~ m/DA\s+(\w+)\s*(?:<(\w+))?$/) {
+        $inst->{stack} = parse_stack($2, $i);
+        $inst->{op_code} = "TA";
+    } elsif ($i =~ m/^DA\s+(\w+)\s*(?:<(\w+))?/) {
         if (!is_var($1)) {
             parse_error("Expected variable as 1st argument of DA instruction <$i>");
         }
-        $rinst->{stack} = parse_stack($2, $i);
-        $rinst->{op_code} = "DA";
-        $rinst->{var} = $1;
-    } elsif ($i =~ m/(HOPLA|HOPLAFA)\s+(\w+)$/) {
+        $inst->{stack} = parse_stack($2, $i);
+        $inst->{op_code} = "DA";
+        $inst->{var} = $1;
+    } elsif ($i =~ m/^(HOPLA|HOPLAFA)\s+(\w+)/) {
         if (!is_label($2)) {
             parse_error("Expected label as 1st argument of $1 instruction <$i>");
         }
-        $rinst->{op_code} = $1;
-        $rinst->{label} = $2;
-    } elsif ($i =~ m/(HOPLAZA|HOPLAGA)\s+(\w+)\s+($rval)$/) {
+        $inst->{op_code} = $1;
+        $inst->{label} = $2;
+    } elsif ($i =~ m/^(HOPLAZA|HOPLAGA)\s+(\w+)\s+($expr)/) {
         if (!is_label($2)) {
             parse_error("Expected label as 1st argument of $1 instruction <$i>");
         }
-        if (parse_rval($3, $rinst) < 0) {
-            parse_error("Expected rvalue as 2nd argument of $1 instruction <$i>");
+        if (parse_expr($3, $inst) < 0) {
+            parse_error("Expected exprue as 2nd argument of $1 instruction <$i>");
         }
-        $rinst->{op_code} = $1;
-        $rinst->{label} = $2;
-    } elsif ($i =~ m/ORWAR$/) {
-        $rinst->{op_code} = "ORWAR";
-    } elsif ($i =~ m/((?:$conso$vowel)+)\s*:$/) {
-        $rinst->{name} = $1;
+        $inst->{op_code} = $1;
+        $inst->{label} = $2;
+    } elsif ($i =~ m/^ORWAR$/) {
+        $inst->{op_code} = "ORWAR";
+    } elsif ($i =~ m/^((?:$conso$vowel)+)\s*:$/) {
+        $inst->{name} = $1;
     } else {
         parse_error("Unrecognized instruction <$i>");
     }
-    return $rinst;
+    return $inst;
 }
 
-###########
-#Parse file
-#
+#Main parsing
 my @functions = ();
 my $f = {insts => [], lbls => {}};
+my $filename = shift @ARGV;
 
-open(FILE, "<", shift @ARGV)
+open(FILE, "<", $filename)
     or die($!);
 
 while (<FILE>) {
@@ -199,24 +199,24 @@ while (<FILE>) {
     }
     #Function context
     if (exists($f->{name})) {
-        my $rinst = parse_inst($l);
+        my $inst = parse_inst($l);
         #Label
-        if (exists($rinst->{name})) {
-            my $lbl = $rinst->{name};
+        if (exists($inst->{name})) {
+            my $lbl = $inst->{name};
             my $inst_idx = scalar @{$f->{insts}};    #Current number of instructions
             $f->{lbls}->{$lbl} = $inst_idx;
         }
         #Regular instruction
         else {
-            push(@{$f->{insts}}, $rinst);
+            push(@{$f->{insts}}, $inst);
             #End of function, append to functions array
-            if ($rinst->{op_code} eq "ORWAR") {
+            if ($inst->{op_code} eq "ORWAR") {
                 push (@functions, $f);
                 $f = {insts => [], lbls => {}};
             }
         }
     }
-    #No context
+    #No context - expect function declaration
     else {
         $f->{name} = parse_func($l);
         if ($f->{name} eq "") {
@@ -225,7 +225,7 @@ while (<FILE>) {
     }
 }
 
-print ">Parsing $ARGV[0] successful: $line lines\n";
+print ">Parsing $filename successful: $line lines\n";
 print ">Functions:\n";
 foreach (@functions) {
     my %f = %{$_};
@@ -234,7 +234,7 @@ foreach (@functions) {
     print "\t-$f{name} with $n_inst instructions and $n_lbls labels\n";
 }
 
-
+##########
 #Execution
 #---------
 #
@@ -250,7 +250,7 @@ foreach (@functions) {
 #   papa_stack = []
 #   mama_stack = []
 
-
+#Globals
 my @frames = ();
 my $frame = {func => undef, pc => 0, vars => {}};
 my @stack = ();
@@ -290,26 +290,26 @@ sub eval_var {
     }
 }
 
-sub eval_rval {
+sub eval_expr {
     my $inst = shift;
-    my $t = $inst->{rval_type};
+    my $t = $inst->{expr_type};
 
     if ($t == 0) {
-        return eval_var($inst->{rval1_var});
+        return eval_var($inst->{expr1_var});
     } elsif ($t == 1) {
-        return $inst->{rval1_imm};
+        return $inst->{expr1_imm};
     } else {
         my $v1;
         my $v2;
-        if (exists($inst->{rval1_var})) {
-            $v1 = eval_var($inst->{rval1_var});
+        if (exists($inst->{expr1_var})) {
+            $v1 = eval_var($inst->{expr1_var});
         } else {
-            $v1 = $inst->{rval1_imm};
+            $v1 = $inst->{expr1_imm};
         }
-        if (exists($inst->{rval2_var})) {
-            $v2 = eval_var($inst->{rval2_var});
+        if (exists($inst->{expr2_var})) {
+            $v2 = eval_var($inst->{expr2_var});
         } else {
-            $v2 = $inst->{rval2_imm};
+            $v2 = $inst->{expr2_imm};
         }
         if ($t == 2) {
             return $v1 + $v2;
@@ -324,7 +324,7 @@ sub eval_rval {
 sub exec_inst {
     my $inst = shift;
     my $op = $inst->{op_code};
-    my $rval = 0;
+    my $expr = 0;
     my $vars = $frame->{vars};
     my $func = $frame->{func};
     my $jump = 0;
@@ -332,27 +332,27 @@ sub exec_inst {
     my $ret = 0;
     my $end = 0;
     
-    if (exists($inst->{rval_type}) && $inst->{rval_type} >= 0) {
-        $rval = eval_rval($inst);
+    if (exists($inst->{expr_type}) && $inst->{expr_type} >= 0) {
+        $expr = eval_expr($inst);
     }
 
     if ($op eq "BA") {
-        $vars->{$inst->{var}} = $rval;
+        $vars->{$inst->{var}} = $expr;
     } elsif ($op eq "TA") {
         my $st = $stack_ref{$inst->{stack}};
-        push(@$st, $rval);
+        push(@$st, $expr);
     } elsif ($op eq "DA") {
         my $st = $stack_ref{$inst->{stack}};
         if (scalar @$st == 0) {
-            exec_error("Trying to pop an empty stack $inst->{stack}");
+            exec_error("Trying to pop an empty stack ($inst->{stack})");
         }
         $vars->{$inst->{var}} = pop(@$st);
     } elsif ($op eq "HOPLA") {
         $jump = 1;
     } elsif ($op eq "HOPLAZA") {
-        $jump = ($rval == 0);
+        $jump = ($expr == 0);
     } elsif ($op eq "HOPLAGA") {
-        $jump = ($rval > 0);
+        $jump = ($expr > 0);
     } elsif ($op eq "HOPLAFA") {
         $call = 1;
     } elsif ($op eq "ORWAR") {
@@ -404,7 +404,7 @@ sub exec_inst {
     return $end;
 }
 
-# Main start
+# Main execution
 $f = get_func_by_name("debu");
 if (!$f) {
     exec_error("Function debu not found");
@@ -413,7 +413,7 @@ $frame->{func} = $f;
 push(@frames, $frame);
 push(@stack, @ARGV);
 
-print ">Start execution\n";
+print ">Start execution\n\n";
 while (1) {
     my $func = $frame->{func};
     my $pc = $frame->{pc};
@@ -426,8 +426,9 @@ while (1) {
         last;
     }
 }
-print ">End execution after $n_insts instruction\n";
+print "\n>End execution after $n_insts instruction\n";
 print ">Return stack is :\n";
 foreach (@stack) {
     print ">\t$_\n";
 }
+

@@ -115,3 +115,19 @@ Launch an aDELe program
 ============
 
 `./adele.pl [program_file] [arguments]`
+
+Here is an example to compute the factorial of 10:
+
+    [adele@amc]$./adele.pl examples/facto.adl 10
+    >Parsing examples/facto.adl successful: 21 lines
+    >Functions:
+	-facoto with 9 instructions and 2 labels
+	-debu with 4 instructions and 0 labels
+    >Start execution
+
+    |> 3628800
+
+    >End execution after 88 instruction
+    >Return stack is :
+    >	0
+
