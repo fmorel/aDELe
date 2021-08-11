@@ -114,4 +114,4 @@ Full examples
 Launch an aDELe program
 ============
 
-`./adele.pl [program_file] [arguments]
+`./adele.pl [program_file] [arguments]`
