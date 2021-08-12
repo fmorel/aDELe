@@ -73,6 +73,7 @@ Begins with `#`
 
 Full examples
 -----------
+These examples files are available in the `examples` directory of this repo.
 
 ### Fibonnaci :
 
@@ -100,9 +101,10 @@ Full examples
       HOPLAFA facoto      # Recursive call with ana-1
       DA afa              # afa = facoto(ana-1)
       TA ana MA afa       # returns ana * afa
-      ORWAR
+      HOPLA reta
     fini:
-      TA 1
+      TA 1		  # Return value of factorial(0)
+    reta
       ORWAR
 
     FA debu:
@@ -115,6 +117,8 @@ Launch an aDELe program
 ============
 
 `./adele.pl [program_file] [arguments]`
+or
+`perl adele.pl [program_file] [arguments]`
 
 Here is an example to compute the factorial of 10:
 
@@ -130,4 +134,8 @@ Here is an example to compute the factorial of 10:
     >End execution after 88 instruction
     >Return stack is :
     >	0
+
+If you don't have a Linux distribution available, you can use Fabrice Bellard's VM running in your browser :
+
+https://bellard.org/jslinux/vm.html?url=alpine-x86.cfg&mem=192
 
