@@ -1,9 +1,19 @@
 aDELe language
 ==============
 
+This small programming language has been inspired
+By the first 'words' of my daughter Adèle.
+
+
+It is some sort of of assembly language without notion of memory.
+Everyone can try and play with the languages
+
 Variables
 -------
-Any name of the form : voyel + (consonant + voyel)*
+A variable is like a toy cube containing an integer value.
+aDELe uses them to perform operations, tests and stack or un stack them.
+
+It can be any name of the form : voyel + (consonant + voyel)*
 
 Lowercase only.
 
@@ -13,6 +23,10 @@ Example invalid: baba, COCO
 
 Expression
 -----
+An expression is the way to perform operations on variables.
+
+It can be :
+
 - A decimal integer: 0, -523, 12
 - A simple variable: aba
 - A simple operation on variables or decimal integer : `ababa PA 1`, `oko MA aka`
@@ -34,7 +48,17 @@ Stack
 
 Data is stored in stacks, and Adele likes to stack and unstack her little cubes.
 
-She also like to give them to an adult and she always expect to retrieve them in 'last in', 'first out' order.
+She also likes to give them to an adult and she always expect to retrieve them in 'last in', 'first out' order.
+Example :
+    TA 10 >mama
+    TA 20 >papa
+    TA 30 >mama
+    DA aba <mama   #aba will hold the value 30
+    DA aca <papa   #aca will hold 20
+    DA ada <mama   #ada will hold 10
+    DA eroro <papa #will produce an error since there is
+                    no more elements in papa stack
+
 
 TA and DA command can operate on 3 stacks
 - The default 'unnamed' stack is used to pass function arguments and retrive return values.
@@ -45,8 +69,8 @@ For the debu function, DA allows to retrieve command line arguments.
 Jumps / functions
 -----------------
 - `HOPLA [label]`: Unconditional jump to label "hop là !"
-- `HOPLAZA [label] [rval]` : Jumps to label if rvalue evals to 0, else continue to next instruction
-- `HOPLAGA [label] [rval]` : Jumps to label if rvalue evals to >0, else continue to next instruction
+- `HOPLAZA [label] [expr]` : Jumps to label if expr evals to 0, else continue to next instruction
+- `HOPLAGA [label] [expr]` : Jumps to label if expr evals to >0, else continue to next instruction
 
 - `HOPLAFA [label]` : Call to function described by label
 - `ORWAR` : Returns from fonction. It shall be the last instruction of any function - "au revoir"
@@ -89,7 +113,6 @@ These examples files are available in the `examples` directory of this repo.
         HOPLAGA fibo ana      #loop
       TA unu
       HOPLAFA sekasa            #print result
-      TA 0
       ORWAR
 
 ### Factorial :
@@ -110,14 +133,15 @@ These examples files are available in the `examples` directory of this repo.
     FA debu:
       HOPLAFA facoto  # Command line argument is directly facoto argument
       HOPLAFA sekasa  # facoto returns is directly argument to print
-      TA 0
       ORWAR
 
 Launch an aDELe program
 ============
 
 `./adele.pl [program_file] [arguments]`
+
 or
+
 `perl adele.pl [program_file] [arguments]`
 
 Here is an example to compute the factorial of 10:
@@ -132,8 +156,6 @@ Here is an example to compute the factorial of 10:
     |> 3628800
 
     >End execution after 88 instruction
-    >Return stack is :
-    >	0
 
 If you don't have a Linux distribution available, you can use Fabrice Bellard's VM running in your browser :
 
