@@ -2,11 +2,11 @@ aDELe language
 ==============
 
 This small programming language has been inspired
-By the first 'words' of my daughter Adèle.
+by the first 'words' of my daughter Adèle.
 
 
 It is some sort of of assembly language without notion of memory.
-Everyone can try and play with the languages
+Everyone can try and play with the language.
 
 Variables
 -------
@@ -50,6 +50,7 @@ Data is stored in stacks, and Adele likes to stack and unstack her little cubes.
 
 She also likes to give them to an adult and she always expect to retrieve them in 'last in', 'first out' order.
 Example :
+
     TA 10 >mama
     TA 20 >papa
     TA 30 >mama
@@ -143,6 +144,8 @@ Launch an aDELe program
 or
 
 `perl adele.pl [program_file] [arguments]`
+
+Perl is readily available on most standard Linux distributions.
 
 Here is an example to compute the factorial of 10:
 
