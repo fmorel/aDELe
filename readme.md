@@ -90,7 +90,7 @@ For functions declaration, it is preceded by the keyword `FA`
 Special function
 ---------------
 - `sekasa` : print to terminal - "c'est quoi ça"
-- `debu`: First function called (main), should return 0 - "début"
+- `debu`: First function called (main) - "début"
 
 Comments
 -------
