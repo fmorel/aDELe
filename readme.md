@@ -164,3 +164,35 @@ If you don't have a Linux distribution available, you can use Fabrice Bellard's 
 
 https://bellard.org/jslinux/vm.html?url=alpine-x86.cfg&mem=192
 
+Challenge
+=========
+
+### Euclidean division
+
+Write a program performing the euclidean division of two integers, giving the quotient and remainder as stack returns
+    
+    [adele@amc]$./adele.pl challenge/div.adl 24062020 1987
+    >Parsing challenge/div.adl successful: 67 lines
+    [...]
+    >Start execution
+
+    >End execution after 208 instruction
+    >Return stack is :
+    >	12109
+    >	1437
+
+Here we have 1987 * 12109 + 1437 = 24062020
+
+If you want to carry on the challenge, it is important for the function to be efficient (in terms of instructions executed) when dividing big numbers by small numbers.
+
+### Primality
+
+Write a program performing the primality check on an integer
+
+### Delicate primes
+
+Write a program finding the nth [delicate prime](https://en.wikipedia.org/wiki/Delicate_prime) in base 10, when n is passed as function argument.
+
+It is authorized to use the fact that the first delicate prime is 294001.
+It is not auhtorized to hardcode any other delicate prime.
+The program must be able to give at least all the delicate primes with 9 digits or less.
