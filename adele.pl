@@ -24,7 +24,8 @@ use warnings;
 
 my $vowel = '[aeiou]';
 my $conso = '[b-df-hj-np-tv-z]';
-my $expr = '\w.*';
+my $var_or_imm = '[-a-z0-9]+'; #Don't forget the '-' for negative immediates
+my $expr = $var_or_imm . '(?:\s+(?:PA|MA|FA)\s+' . $var_or_imm . ')?';
 my $line = 0;
 
 #Quick helpers
@@ -86,7 +87,7 @@ sub parse_expr {
     } elsif (is_imm($r)) {
        $inst->{expr_type} = 1;
        $inst->{expr1_imm} = int($r);
-    } elsif ($r =~ m/^(\w+)\s+(PA|MA|FA)\s+(\w+)$/) {
+    } elsif ($r =~ m/^($var_or_imm)\s+(PA|MA|FA)\s+($var_or_imm)$/) {
         my $v1 = $1;
         my $v2 = $3;
         if (is_var_or_imm($v1) && is_var_or_imm($v2)) {
@@ -141,13 +142,13 @@ sub parse_inst
             parse_error("Expected variable as 1st argument of BA instruction <$i>");
         }
         if (parse_expr($2, $inst) < 0) {
-            parse_error("Expected exprue as 2nd argument of BA instruction <$i>");
+            parse_error("Expected expr as 2nd argument of BA instruction <$i>");
         }
         $inst->{op_code} = "BA";
         $inst->{var} = $1;
     } elsif ($i =~ m/^TA\s+($expr)\s*(?:>(\w+))?/) {
         if (parse_expr($1, $inst) < 0) {
-            parse_error("Expected exprue as 1st argument of TA instruction <$i>");
+            parse_error("Expected expr as 1st argument of TA instruction <$i>");
         }
         $inst->{stack} = parse_stack($2, $i);
         $inst->{op_code} = "TA";
@@ -232,6 +233,12 @@ foreach (@functions) {
     my $n_inst = @{$f{insts}};
     my $n_lbls = keys %{$f{lbls}};
     print "\t-$f{name} with $n_inst instructions and $n_lbls labels\n";
+#Debug
+#    foreach (@{$f{insts}}) {
+#        my %inst = %{$_};
+#        print map { "$_ => $inst{$_}, " } keys %inst;
+#        print "\n";
+#    }
 }
 
 ##########
