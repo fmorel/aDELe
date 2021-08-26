@@ -187,7 +187,7 @@ If you want to carry on the challenge, it is important for the function to be ef
 
 ### Primality
 
-Write a program performing the primality check on an integer
+Write a program performing the primality check on an integer. It can be assumed that the integer argument will be greater than 1000.
 
 ### Delicate primes
 
