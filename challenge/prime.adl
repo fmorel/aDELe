@@ -1,0 +1,165 @@
+#Primality test for big enough integers (> 1000)
+
+#Reuse divi function for  We are guaranteed that division will occur with divido < divisa
+#So, some checks are removed. Convert it as modi since we don't care about quotient
+
+FA modi:
+    DA adivisa
+    DA adivido
+    BA aqota 1
+    BA ana -1                           #loop counter
+fata:
+    BA apodo adivisa FA aqota           #podo = divisa * 2^n
+    TA aqota >papa
+    BA ana ana PA 1
+    BA aqota aqota FA 2
+    HOPLAGA fata adivido MA apodo
+
+#papa stack should now contain the values : 1, 2, .. 2^(ana)
+#and divisa * 2^(ana) >= divido but divisa * 2^(ana -1) < divido
+DA aqota <papa  #the last qota in the stack is the first with divisa * qota >= divido 
+
+#Handle a round division where we found exact value
+BA areta 0
+HOPLAZA fini adivido MA apodo   #Finish with reta = 0 if divisa * qota == divido
+
+#Now fetch qota so that divisa * qota < divido
+#There is at least 2 values in stack since we made an early check for divisa > divido
+DA aqota <papa
+BA ana ana MA 1
+#If ana = 0, this is already the end
+HOPLAZA pekafini ana
+
+#Otherwise dichotomoy through ana = 0
+dico:
+    DA atepa <papa  #Current step is 2 ^(ana - 1)
+    BA ana ana MA 1
+    BA aqotabufu aqota          #Store current qota value
+    #Check if (qota+step )*divisa is bigger or smaller than adivido
+    BA aqota aqota PA atepa
+    BA apodo adivisa FA aqota
+    HOPLAGA biga adivido MA apodo
+    HOPLAZA fini adivido MA apodo   #reta is still 0, can finish for exact division match
+    #1st branch : adivido < apodo, revert aqota to previous value and go for another loop if necessary
+        BA aqota aqotabufu
+        HOPLAZA pekafini ana
+        HOPLA dico
+    #2nd branch : adivido > apodo : keep aqota to current value
+    biga:
+        HOPLAZA pekafini ana
+        HOPLA dico 
+
+#Here we just need to compute the rest as adivido - apodo
+pekafini:
+    BA apodo adivisa FA aqota
+    BA areta adivido MA apodo
+fini:
+    TA areta
+    ORWAR
+
+
+FA pirimi:
+    DA apa
+    BA ipirimi 0
+    #Check divisibility for small primes - the most likely divisors
+    #Instead of using each independelty, we perform modulus by two consecutive primes p and q since division is costly ...
+    #And check remainder against 0, p, q and their multiple < p*q
+    # 2*3 = 6
+    TA apa
+    TA 6
+    HOPLAFA modi
+    DA areta
+    HOPLAZA fini areta
+    HOPLAZA fini areta MA 2
+    HOPLAZA fini areta MA 3
+    HOPLAZA fini areta MA 4
+
+    # 5*7 = 35
+    TA apa
+    TA 35
+    HOPLAFA modi
+    DA areta
+    HOPLAZA fini areta
+    HOPLAZA fini areta MA 5
+    HOPLAZA fini areta MA 7
+    HOPLAZA fini areta MA 10
+    HOPLAZA fini areta MA 14
+    HOPLAZA fini areta MA 15
+    HOPLAZA fini areta MA 20
+    HOPLAZA fini areta MA 21
+    HOPLAZA fini areta MA 25
+    HOPLAZA fini areta MA 28
+    HOPLAZA fini areta MA 30
+
+    # 11*13 = 143
+    TA apa
+    TA 143
+    HOPLAFA modi
+    DA areta
+    HOPLAZA fini areta
+    HOPLAZA fini areta MA 11
+    HOPLAZA fini areta MA 13
+    HOPLAZA fini areta MA 22
+    HOPLAZA fini areta MA 26
+    HOPLAZA fini areta MA 33
+    HOPLAZA fini areta MA 39
+    HOPLAZA fini areta MA 44
+    HOPLAZA fini areta MA 52
+    HOPLAZA fini areta MA 55
+    HOPLAZA fini areta MA 65
+    HOPLAZA fini areta MA 66
+    HOPLAZA fini areta MA 77
+    HOPLAZA fini areta MA 78
+    HOPLAZA fini areta MA 88
+    HOPLAZA fini areta MA 91
+    HOPLAZA fini areta MA 99
+    HOPLAZA fini areta MA 104
+    HOPLAZA fini areta MA 110
+    HOPLAZA fini areta MA 117
+    HOPLAZA fini areta MA 121
+
+    #Now perform a loop on each odd and not multiple of 3 integer starting from 17
+    #so it's +2 then +4, then +2, etc, the loop increase upu 6 by 6
+    BA upu 17
+lopo:
+    #Divide and check remainder
+    TA apa
+    TA upu
+    HOPLAFA modi
+    DA areta
+    HOPLAZA fini areta
+
+    TA apa
+    TA upu PA 2
+    HOPLAFA modi
+    DA areta
+    HOPLAZA fini areta
+
+    BA upu upu PA 6
+    #End of loop and apa is prime if upu^2 reached apa
+    BA upudo upu FA upu
+    HOPLAGA lopo apa MA upudo
+
+    BA ipirimi 1
+fini:
+    TA ipirimi
+    ORWAR
+
+#Main function take a command line argument and print the next 20 prime numbers after
+FA debu:
+    DA ana
+    BA apa 0
+lopo:
+    TA ana
+    HOPLAFA pirimi
+    DA ipirimi
+    HOPLAZA nopirimi ipirimi
+    TA ana #asta is prime, save on stack
+    BA apa apa PA 1
+nopirimi:
+    BA ana ana PA 1
+    HOPLAGA lopo 20 MA apa
+    ORWAR
+
+
+

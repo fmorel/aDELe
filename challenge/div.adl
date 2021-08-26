@@ -1,0 +1,67 @@
+#Perform division in two steps :
+#1 (fata) : Multiply quotient by 2 until adivisa * aqota > adivido
+#2 (dico) : Dichotomy to find exact aqota
+#The power of twos are stacked during the first step and unstack for the dichotomy in 'papa' stack
+
+FA divi:
+    DA adivisa
+    DA adivido
+    BA aqota 0
+    BA areta adivido
+    HOPLAGA fini adivisa MA adivido     #Finish if divisa > divido
+    BA aqota 1
+    BA ana -1                           #loop counter
+fata:
+    BA apodo adivisa FA aqota           #podo = divisa * 2^n
+    TA aqota >papa
+    BA ana ana PA 1
+    BA aqota aqota FA 2
+    HOPLAGA fata adivido MA apodo
+
+#papa stack should now contain the values : 1, 2, .. 2^(ana)
+#and divisa * 2^(ana) >= divido but divisa * 2^(ana -1) < divido
+DA aqota <papa  #the last qota in the stack is the first with divisa * qota >= divido 
+
+#Handle a round division where we found exact value
+BA areta 0
+HOPLAZA fini adivido MA apodo   #Finish with reta = 0 if divisa * qota == divido
+
+#Now fetch qota so that divisa * qota < divido
+#There is at least 2 values in stack since we made an early check for divisa > divido
+DA aqota <papa
+BA ana ana MA 1
+#If ana = 0, this is already the end
+HOPLAZA pekafini ana
+
+#Otherwise dichotomoy through ana = 0
+dico:
+    DA atepa <papa  #Current step is 2 ^(ana - 1)
+    BA ana ana MA 1
+    BA aqotabufu aqota          #Store current qota value
+    #Check if (qota+step )*divisa is bigger or smaller than adivido
+    BA aqota aqota PA atepa
+    BA apodo adivisa FA aqota
+    HOPLAGA biga adivido MA apodo
+    HOPLAZA fini adivido MA apodo   #reta is still 0, can finish for exact division match
+    #1st branch : adivido < apodo, revert aqota to previous value and go for another loop if necessary
+        BA aqota aqotabufu
+        HOPLAZA pekafini ana
+        HOPLA dico
+    #2nd branch : adivido > apodo : keep aqota to current value
+    biga:
+        HOPLAZA pekafini ana
+        HOPLA dico 
+
+#Here we just need to compute the rest as adivido - apodo
+pekafini:
+    BA apodo adivisa FA aqota
+    BA areta adivido MA apodo
+fini:
+    TA aqota
+    TA areta
+    ORWAR
+
+FA debu:
+    HOPLAFA divi
+    ORWAR
+
