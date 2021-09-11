@@ -27,7 +27,15 @@ my $conso = '[b-df-hj-np-tv-z]';
 my $var_or_imm = '[-a-z0-9]+'; #Don't forget the '-' for negative immediates
 my $expr = $var_or_imm . '(?:\s+(?:PA|MA|FA)\s+' . $var_or_imm . ')?';
 my $line = 0;
+my $test = 0;
 
+sub test_print {
+    if ($test) {
+        print $_[1];
+    } else {
+        print $_[0];
+    }
+}
 #Quick helpers
 sub is_var {
     my $v = shift;
@@ -185,6 +193,10 @@ sub parse_inst
 }
 
 #Main parsing
+if ($ARGV[0] eq "-t") {
+    $test = 1;
+    shift @ARGV;
+}
 my @functions = ();
 my $f = {insts => [], lbls => {}};
 my $filename = shift @ARGV;
@@ -226,13 +238,13 @@ while (<FILE>) {
     }
 }
 
-print ">Parsing $filename successful: $line lines\n";
-print ">Functions:\n";
+test_print(">Parsing $filename successful: $line lines\n", "");
+test_print(">Functions:\n", "");
 foreach (@functions) {
     my %f = %{$_};
     my $n_inst = @{$f{insts}};
     my $n_lbls = keys %{$f{lbls}};
-    print "\t-$f{name} with $n_inst instructions and $n_lbls labels\n";
+    test_print("\t-$f{name} with $n_inst instructions and $n_lbls labels\n", "");
 #Debug
 #    foreach (@{$f{insts}}) {
 #        my %inst = %{$_};
@@ -266,6 +278,8 @@ my @mama_stack = ();
 my %stack_ref = (default => \@stack, papa => \@papa_stack, mama => \@mama_stack);
 my $n_insts = 0;
 my $MAX_FRAMES = 64;
+
+
 
 sub get_func_by_name {
     my $name = shift;
@@ -418,9 +432,11 @@ if (!$f) {
 }
 $frame->{func} = $f;
 push(@frames, $frame);
+
+
 push(@stack, @ARGV);
 
-print ">Start execution\n\n";
+test_print(">Start execution\n\n", "");
 while (1) {
     my $func = $frame->{func};
     my $pc = $frame->{pc};
@@ -433,9 +449,9 @@ while (1) {
         last;
     }
 }
-print "\n>End execution after $n_insts instruction\n";
-print ">Return stack is :\n";
+test_print("\n>End execution after $n_insts instruction\n", "$n_insts: ");
+test_print(">Return stack is :\n", "");
 foreach (@stack) {
-    print ">\t$_\n";
+    test_print (">\t$_\n", "$_ ");
 }
-
+test_print("\n", "\n");

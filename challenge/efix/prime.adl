@@ -117,6 +117,8 @@ FA pirimi:
     HOPLAZA fini areta MA 110
     HOPLAZA fini areta MA 117
     HOPLAZA fini areta MA 121
+    HOPLAZA fini areta MA 130
+    HOPLAZA fini areta MA 132
 
     #Now perform a loop on each odd and not multiple of 3 integer starting from 17
     #so it's +2 then +4, then +2, etc, the loop increase upu 6 by 6
@@ -146,7 +148,7 @@ fini:
     ORWAR
 
 #Main function take a command line argument and print the next 20 prime numbers after
-FA debu:
+FA vipirimi:
     DA ana
     BA apa 0
 lopo:
@@ -161,5 +163,8 @@ nopirimi:
     HOPLAGA lopo 20 MA apa
     ORWAR
 
+FA debu:
+    HOPLAFA pirimi
+    ORWAR
 
 
