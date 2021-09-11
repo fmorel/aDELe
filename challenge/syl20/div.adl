@@ -1,0 +1,29 @@
+FA debu:
+   DA adu			#2nd argument (b)
+   DA anu			#1st argument (a)
+
+   BA ara anu			# r = a
+   BA aqa 0			# q = 0
+   BA ana 0			# n = 0
+   BA axu adu			# aux = b
+
+lolo:				# while (aux <= a)
+   TA axu >papa			# Store aux<<1 on papa
+   BA axu axu FA 2		# aux <<=1
+   BA ana ana PA 1		# n++
+   HOPLAGA lolo anu MA axu
+   HOPLAZA lolo anu MA axu
+
+lili:
+   DA axu <papa			# aux >>= 1
+   BA ana ana MA 1		# n--
+   BA aqa aqa FA 2		# q <<= 1
+   HOPLAGA lilico axu MA ara	# if !(r>=aux)
+   BA ara ara MA axu		# r = r - aux
+   BA aqa aqa PA 1		# q++
+lilico:
+   HOPLAGA lili ana
+
+   TA aqa
+   TA ara
+   ORWAR

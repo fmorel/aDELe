@@ -1,0 +1,391 @@
+FA divi:
+   DA adu			#2nd argument (b)
+   DA anu			#1st argument (a)
+
+   BA ara anu			# r = a
+   BA aqa 0			# q = 0
+   BA ana 0			# n = 0
+   BA axu adu			# aux = b
+
+lolo:				# while (aux <= a)
+   TA axu >papa			# Store aux<<1 on papa
+   BA axu axu FA 2		# aux <<=1
+   BA ana ana PA 1		# n++
+   HOPLAGA lolo anu MA axu
+   HOPLAZA lolo anu MA axu
+
+lili:
+   DA axu <papa			# aux >>= 1
+   BA ana ana MA 1		# n--
+   BA aqa aqa FA 2		# q <<= 1
+   HOPLAGA lilico axu MA ara	# if !(r>=aux)
+   BA ara ara MA axu		# r = r - aux
+   BA aqa aqa PA 1		# q++
+lilico:
+   HOPLAGA lili ana
+
+   TA aqa
+   TA ara
+   ORWAR
+
+FA pemede:
+   DA emi			# Argument
+
+   # Copy mama stack (full) to papa stack (empty)
+   DA amano <mama
+   BA apano amano
+lolo:
+   DA ano <mama
+   TA ano >papa                 # Copy on papa
+   TA ano                       # and on normal stack for copy-back
+   BA amano amano MA 1
+   HOPLAGA lolo amano
+   TA apano >papa
+
+   # copy back to mama
+lala:
+   DA ano
+   TA ano >mama
+   BA amano amano PA 1
+   HOPLAGA lala apano MA amano
+   TA amano >mama
+
+   TA 0 >mama                   # initialize new empty stack on mama
+                                #on top of the current one
+
+   # Now start the lightly modified peme algorithm: when papa stack is
+   # empty, it means current try is a prime number
+
+   # TA emi HOPLAFA
+   # sekasa
+
+   # BA acu 0                     # Count divisions
+
+   BA ivi 3
+
+lopo:
+   TA emi
+   TA ivi
+   HOPLAFA divi
+   # BA acu acu PA 1              # increment division counter
+   DA ese			# Rest
+   DA oti			# Quotient
+
+   # TA ivi
+   # HOPLAFA sekasa
+   # TA oti
+   # HOPLAFA sekasa
+   # TA ese
+   # HOPLAFA sekasa
+
+   HOPLAZA fini ese
+
+   BA aca ivi FA ivi
+   HOPLAGA fini aca MA emi      # stop if divisor is more than the square root of number
+
+   DA apano <papa               # Read papa stack size
+   TA apano >papa               # Restre papa stack size
+   BA ese 1
+   HOPLAZA fini apano           # Current is a prime number
+
+   HOPLAFA pikodivo             # Get next divisor (will always be 3 in this case)
+   DA ivi                       # Divisor to use
+   HOPLAGA fini ivi MA emi # end if (divisor > argument)
+
+   HOPLAGA lopo oti MA 1
+
+fini:
+
+   # empty papa and mama stacks
+   DA amano <mama
+loma:
+   HOPLAZA lomafi amano
+   BA amano amano MA 1
+   DA ano <mama
+   HOPLA loma
+lomafi:
+
+   DA apano <papa
+lopa:
+   HOPLAZA lopafi apano
+   BA apano apano MA 1
+   DA ano <papa
+   HOPLA lopa
+lopafi:
+
+   # TA acu
+   # HOPLAFA sekasa
+   TA ese                       # Positive for true, zero for false
+   ORWAR
+
+# Initialize papa mama  stacks
+FA tinipikodivo:
+   TA 5 >papa                   # Stack of prime numbers to use
+   TA 1 >papa                   # Stack of prime numbers to use
+   TA 0 >mama                   # Stack of used prime numbers
+   ORWAR
+
+# Rewind used stack to ready stack
+FA finipikodivo:
+   # TA 999
+   # HOPLAFA sekasa
+   DA amano <mama               # Get mama stack size
+   # TA amano
+   # HOPLAFA sekasa
+   DA apano <papa               # Get papa stack size
+   HOPLAZA fini amano           # mama stack is empty
+   BA apano apano PA amano      # Full papa stack size
+   # TA 9991
+   # HOPLAFA sekasa
+lolo:
+   DA api <mama                 # Pop mama
+   # TA api
+   # HOPLAFA sekasa
+   TA api >papa                 # Push papa
+   BA amano amano MA 1          # decrement mama stack size
+   HOPLAGA lolo amano
+fini:
+   TA 0 >mama                   # Initialize mama stack
+   TA apano >papa               # Set full papa stack size
+   ORWAR
+
+FA pikodivo:
+   # TA 5555
+   # HOPLAFA sekasa
+   DA apano <papa               # Get papa stack size
+   HOPLAGA papamama apano       # Get next prime number from papa stack
+nexepime:                       # Compute next prime number
+   DA amano <mama               # Get mama stack size
+   DA apime <mama               # Get last used prime number
+   TA apime >mama               # Restore mama stack
+   TA amano >mama
+
+lolo:
+   BA apime apime PA 2
+   TA apime                     # Next prime try
+   HOPLAFA pemede               # prime test specific for nexepime
+   DA apimeresu                 # Result
+   HOPLAZA lolo apimeresu       # while (result == 0)
+
+   DA amano <mama               # Get mama stack size
+   TA apime >mama               # Push new used prime
+   # TA 111111111111111111111111111
+   # HOPLAFA sekasa
+   # TA apime
+   # HOPLAFA sekasa
+   TA amano PA 1 >mama          # Increment mama stack size
+   # TA amano PA 1
+   # HOPLAFA sekasa
+
+   TA 0 >papa                   # papa stack is empty
+   TA apime                     # Return divisor
+   HOPLA wara
+
+papamama:
+   DA apime <papa               # Get next prime number from stack
+   TA apano MA 1 >papa          # Decrement papa stack size
+   DA amano <mama               # Get mama stack size
+   TA apime >mama               # Push prime numer to mama used stack
+   TA amano PA 1 >mama          # Increment mama stack size
+   TA apime
+
+wara:
+   ORWAR
+
+FA peme:
+   DA emi			# Argument
+
+   # TA emi
+   # HOPLAFA sekasa
+
+   # BA acu 0                     # Count divisions
+
+   BA ivi 3
+
+lopo:
+   TA emi
+   TA ivi
+   HOPLAFA divi
+   # BA acu acu PA 1              # increment division counter
+   DA ese			# Rest
+   DA oti			# Quotient
+
+   # TA ivi
+   # HOPLAFA sekasa
+   # TA oti
+   # HOPLAFA sekasa
+   # TA ese
+   # HOPLAFA sekasa
+
+   HOPLAZA fini ese
+
+   BA aca ivi FA ivi
+   HOPLAGA fini aca MA emi      # stop if divisor is more than the square root of number
+
+   HOPLAFA pikodivo             # Get next divisor (will always be 3 in this case)
+   DA ivi                       # Divisor to use
+   HOPLAGA fini ivi MA emi # end if (divisor > argument)
+
+   HOPLAGA lopo oti MA 1
+
+fini:
+   HOPLAFA finipikodivo
+   # TA acu
+   # HOPLAFA sekasa
+   TA ese                       # Positive for true, zero for false
+   ORWAR
+
+FA delica:
+   DA umu			# Argument
+
+   # TA umu
+   # HOPLAFA sekasa
+
+   TA umu
+   HOPLAFA peme
+   DA esu
+   HOPLAZA fini esu
+   BA iviso 1
+   BA oti umu			# Decumulated quotient
+   BA ese 0			# Accumulated rest
+   BA ala 0			# last loop indicator
+divilozo:				# Loop on divisor
+   # TA 999
+   # HOPLAFA sekasa
+
+   # TA oti
+   # HOPLAFA sekasa
+   # TA 10
+   # HOPLAFA sekasa
+
+   TA oti			# Previous quotient
+   TA 10
+   HOPLAFA divi
+   DA idi			# Digit
+   DA oti			# Quotient
+
+   # TA oti
+   # HOPLAFA sekasa
+   # TA idi
+   # HOPLAFA sekasa
+   # TA ese
+   # HOPLAFA sekasa
+
+   HOPLAGA nolazo oti		# Not last loop
+   BA ala 1			# Last loop
+nolazo:
+   BA ili 1                     # start with digit 1
+
+   # TA 1000
+   # HOPLAFA sekasa
+
+nelozo:				# Loop on odd digits
+   HOPLAZA nelozofi ili MA 11	# Stop when digit is 11
+   HOPLAZA nelozoli ili MA idi	# Skip original digit
+
+   BA ete oti FA 10
+   BA ete ete PA ili
+   BA ete ete FA iviso
+   # TA ete PA ese
+   # HOPLAFA sekasa
+   TA ete PA ese
+   HOPLAFA peme
+   DA esu
+   # TA esu
+   # HOPLAFA sekasa
+   HOPLAGA pabo esu
+nelozoli:				# Increment digit and continue loop
+   BA ili ili PA 2
+   HOPLA nelozo
+nelozofi:				# End of loop on 9 digits
+   BA idi idi FA iviso
+   BA ese ese PA idi		# Compute accumulated rest
+   BA iviso iviso FA 10
+
+divilo:				# Loop on divisor
+   # TA 999
+   # HOPLAFA sekasa
+
+   # TA oti
+   # HOPLAFA sekasa
+   # TA 10
+   # HOPLAFA sekasa
+
+   TA oti			# Previous quotient
+   TA 10
+   HOPLAFA divi
+   DA idi			# Digit
+   DA oti			# Quotient
+
+   # TA oti
+   # HOPLAFA sekasa
+   # TA idi
+   # HOPLAFA sekasa
+   # TA ese
+   # HOPLAFA sekasa
+
+   HOPLAGA nola oti		# Not last loop
+   BA ala 1			# Last loop
+nola:
+   BA ili 0                     # start with digit 0
+
+nelo:				# Loop on 9 digits
+   HOPLAZA nelofi ili MA 10	# Stop when digit is 10
+   HOPLAZA neloli ili MA idi	# Skip original digit
+
+   BA ete oti FA 10
+   BA ete ete PA ili
+   BA ete ete FA iviso
+   # TA ete PA ese
+   # HOPLAFA sekasa
+   TA ete PA ese
+   HOPLAFA peme
+   DA esu
+   # TA esu
+   # HOPLAFA sekasa
+   HOPLAGA pabo esu
+neloli:				# Increment digit and continue loop
+   BA ili ili PA 1
+   HOPLA nelo
+nelofi:				# End of loop on 9 digits
+   BA idi idi FA iviso
+   BA ese ese PA idi		# Compute accumulated rest
+   BA iviso iviso FA 10
+   HOPLAZA divilo ala 		# While (!last)
+# Current digit is good
+joli:
+   BA esu 1
+   HOPLA fini
+pabo:
+   # TA 1001
+   # HOPLAFA sekasa
+   BA esu 0
+fini:
+   TA esu                       # Positive for true, zero for false
+   ORWAR
+
+FA debu:
+   DA unu			# Argument
+   BA enu 294001                # First delicate
+   HOPLAFA tinipikodivo
+
+lopo:
+   TA enu
+   HOPLAFA sekasa
+   HOPLAZA fini unu MA 1
+   BA unu unu MA 1
+nete:
+   BA enu enu PA 2
+   TA enu
+   HOPLAFA delica
+   DA eli
+   HOPLAZA nete eli
+   HOPLA lopo
+fini:
+   TA enu
+   ORWAR
+
+FA debubu:
+   HOPLAFA delica
+   ORWAR
+
