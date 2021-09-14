@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Benchmark;
 
 ########
 #Parsing
@@ -17,8 +18,7 @@ use warnings;
 #   expr2_imm -> valid only if expr_type == 2, 3, 4 and expr2_var == ''
 #
 
-#Function oject :
-#   name-> "fubara"
+#Function in hash table index by name :
 #   insts-> [ {inst1}, {inst2} ]
 #   lbls-> {name => idx, ... }
 
@@ -78,7 +78,7 @@ sub parse_func {
     if ($f =~ m/^FA\s+((?:$conso$vowel)+)\s*:$/) {
         return $1;
     } else {
-        return "";
+        return undef;
     }
 }
 
@@ -197,9 +197,10 @@ if ($ARGV[0] eq "-t") {
     $test = 1;
     shift @ARGV;
 }
-my @functions = ();
+my %functions = ();
 my $f = {insts => [], lbls => {}};
 my $filename = shift @ARGV;
+my $cur_func_name = undef;
 
 open(FILE, "<", $filename)
     or die($!);
@@ -211,7 +212,7 @@ while (<FILE>) {
         next;
     }
     #Function context
-    if (exists($f->{name})) {
+    if ($cur_func_name) {
         my $inst = parse_inst($l);
         #Label
         if (exists($inst->{name})) {
@@ -224,15 +225,16 @@ while (<FILE>) {
             push(@{$f->{insts}}, $inst);
             #End of function, append to functions array
             if ($inst->{op_code} eq "ORWAR") {
-                push (@functions, $f);
+                $functions{$cur_func_name} = $f;
+                $cur_func_name = undef;
                 $f = {insts => [], lbls => {}};
             }
         }
     }
     #No context - expect function declaration
     else {
-        $f->{name} = parse_func($l);
-        if ($f->{name} eq "") {
+        $cur_func_name = parse_func($l);
+        if (!$cur_func_name) {
             parse_error("Expected function definition\n");
         }
     }
@@ -240,11 +242,11 @@ while (<FILE>) {
 
 test_print(">Parsing $filename successful: $line lines\n", "");
 test_print(">Functions:\n", "");
-foreach (@functions) {
-    my %f = %{$_};
+foreach (keys %functions) {
+    my %f = %{$functions{$_}};
     my $n_inst = @{$f{insts}};
     my $n_lbls = keys %{$f{lbls}};
-    test_print("\t-$f{name} with $n_inst instructions and $n_lbls labels\n", "");
+    test_print("\t-$_ with $n_inst instructions and $n_lbls labels\n", "");
 #Debug
 #    foreach (@{$f{insts}}) {
 #        my %inst = %{$_};
@@ -279,16 +281,9 @@ my %stack_ref = (default => \@stack, papa => \@papa_stack, mama => \@mama_stack)
 my $n_insts = 0;
 my $MAX_FRAMES = 64;
 
-
-
 sub get_func_by_name {
     my $name = shift;
-    foreach (@functions) {
-        if ($_->{name} eq $name) {
-            return $_;
-        }
-    }
-    return undef;
+    return $functions{$name};
 }
 
 sub exec_error {
@@ -437,18 +432,25 @@ push(@frames, $frame);
 push(@stack, @ARGV);
 
 test_print(">Start execution\n\n", "");
-while (1) {
-    my $func = $frame->{func};
-    my $pc = $frame->{pc};
-    my $insts = $func->{insts};
-    if ($pc > $#$insts) {
-        exec_error("PC overflow ... missing ORWAR instruction ?");
-    }
-    $n_insts += 1;
-    if (exec_inst($insts->[$pc])) {
-        last;
+
+sub run {
+    while (1) {
+        my $func = $frame->{func};
+        my $pc = $frame->{pc};
+        my $insts = $func->{insts};
+        if ($pc > $#$insts) {
+            exec_error("PC overflow ... missing ORWAR instruction ?");
+        }
+        $n_insts += 1;
+        if (exec_inst($insts->[$pc])) {
+            last;
+        }
     }
 }
+
+#timethis(1, 'run');
+run();
+
 test_print("\n>End execution after $n_insts instruction\n", "$n_insts: ");
 test_print(">Return stack is :\n", "");
 foreach (@stack) {

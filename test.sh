@@ -3,7 +3,9 @@
 ADL_PATH=challenge/$1;
 
 echo "Division"
+echo "12109 1437"
 ./adele.pl -t $ADL_PATH/div.adl 24062020 1987
+echo "707706 16"
 ./adele.pl -t $ADL_PATH/div.adl 24062020 34
 
 echo "Primality"
